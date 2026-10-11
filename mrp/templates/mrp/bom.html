@@ -1,0 +1,47 @@
+{% extends "mrp/base.html" %}
+{% block title %}调配构成表 - ERP / MRP 系统{% endblock %}
+{% block content %}
+<h3 class="mb-3">调配构成表（BOM）</h3>
+<div class="card mb-4">
+    <div class="card-header">{% if editing %}编辑构成关系 #{{ editing.id }}{% else %}新增构成关系{% endif %}</div>
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            <div class="row g-3">
+                {% for field in form %}
+                <div class="col-md-2">
+                    <label class="form-label">{{ field.label }}</label>
+                    {{ field }}
+                    {% for e in field.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+                </div>
+                {% endfor %}
+            </div>
+            <button type="submit" class="btn btn-primary mt-3">保存</button>
+            {% if editing %}<a href="{% url 'bom' %}" class="btn btn-secondary mt-3">取消编辑</a>{% endif %}
+        </form>
+    </div>
+</div>
+<table class="table table-striped table-hover bg-white">
+    <thead class="table-dark">
+        <tr><th>调配标准编号</th><th>调配区代码</th><th>父物料</th><th>子物料</th><th>构成数</th><th>配料提前期</th><th>供应商提前期</th><th>操作</th></tr>
+    </thead>
+    <tbody>
+    {% for e in edges %}
+        <tr>
+            <td>{{ e.standard_code }}</td><td>{{ e.zone_code }}</td>
+            <td>{{ e.parent.code }} {{ e.parent.name }}</td><td>{{ e.child.code }} {{ e.child.name }}</td>
+            <td>{{ e.quantity }}</td><td>{{ e.preparation_lead_time }} 天</td><td>{{ e.supplier_lead_time }} 天</td>
+            <td>
+                <a class="btn btn-sm btn-outline-primary" href="?edit={{ e.id }}">编辑</a>
+                <form method="post" class="d-inline" onsubmit="return confirm('确定删除？')">
+                    {% csrf_token %}
+                    <button name="delete" value="{{ e.id }}" class="btn btn-sm btn-outline-danger">删除</button>
+                </form>
+            </td>
+        </tr>
+    {% empty %}
+        <tr><td colspan="8" class="text-muted">暂无构成关系</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

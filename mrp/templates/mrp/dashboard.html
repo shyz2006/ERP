@@ -1,0 +1,42 @@
+{% extends "mrp/base.html" %}
+{% block title %}首页 - ERP / MRP 系统{% endblock %}
+{% block content %}
+<h2 class="mb-4">系统概览</h2>
+<div class="row g-3 mb-4">
+    <div class="col-md-2"><div class="card text-center"><div class="card-body">
+        <h3>{{ material_count }}</h3><p class="text-muted mb-0">物料</p></div></div></div>
+    <div class="col-md-2"><div class="card text-center"><div class="card-body">
+        <h3>{{ bom_count }}</h3><p class="text-muted mb-0">调配构成</p></div></div></div>
+    <div class="col-md-2"><div class="card text-center"><div class="card-body">
+        <h3>{{ inventory_count }}</h3><p class="text-muted mb-0">库存记录</p></div></div></div>
+    <div class="col-md-2"><div class="card text-center"><div class="card-body">
+        <h3>{{ mps_records|length }}</h3><p class="text-muted mb-0">MPS 记录</p></div></div></div>
+    <div class="col-md-2"><div class="card text-center"><div class="card-body">
+        <h3>{{ result_count }}</h3><p class="text-muted mb-0">MRP 结果</p></div></div></div>
+    <div class="col-md-2"><div class="card text-center"><div class="card-body">
+        <h3>{{ formula_count }}</h3><p class="text-muted mb-0">公式</p></div></div></div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span>当前主生产计划（MPS）</span>
+        <a class="btn btn-sm btn-primary" href="{% url 'mps' %}">管理 MPS</a>
+    </div>
+    <table class="table table-striped mb-0">
+        <thead><tr><th>产品</th><th>数量</th><th>完工日期</th></tr></thead>
+        <tbody>
+        {% for r in mps_records %}
+            <tr><td>{{ r.product.name }}</td><td>{{ r.quantity }}</td><td>{{ r.completion_date|date:"Y-n-j" }}</td></tr>
+        {% empty %}
+            <tr><td colspan="3" class="text-muted">暂无 MPS 记录</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<form method="post" action="{% url 'mrp_run' %}">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-success btn-lg">运行 MRP 计算</button>
+    <a class="btn btn-outline-secondary btn-lg" href="{% url 'mrp_results' %}">查看计算结果</a>
+</form>
+{% endblock %}

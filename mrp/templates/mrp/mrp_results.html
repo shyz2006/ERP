@@ -1,0 +1,59 @@
+{% extends "mrp/base.html" %}
+{% block title %}MRP 计算结果 - ERP / MRP 系统{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="mb-0">MRP 计算结果（共 {{ total }} 条）</h3>
+    <form method="post" action="{% url 'mrp_run' %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-success">重新运行 MRP 计算</button>
+    </form>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">生产计划（按日程下达日期排序）</div>
+    <table class="table table-striped mb-0">
+        <thead>
+            <tr><th>调配方式</th><th>物料代码</th><th>物料名称</th><th>父物料</th><th>需求数量</th><th>日程下达日期</th><th>日程完成日期</th><th>来源 MPS</th><th>层次</th></tr>
+        </thead>
+        <tbody>
+        {% for r in production %}
+            <tr>
+                <td><span class="badge bg-primary">{{ r.allocation_method }}</span></td>
+                <td>{{ r.material.code }}</td><td>{{ r.material.name }}</td>
+                <td>{% if r.parent %}{{ r.parent.name }}{% else %}-{% endif %}</td>
+                <td>{{ r.demand_quantity }}</td>
+                <td>{{ r.release_date|date:"Y-n-j" }}</td><td>{{ r.completion_date|date:"Y-n-j" }}</td>
+                <td>{{ r.mps_record.product.name }} x{{ r.mps_record.quantity }} @ {{ r.mps_record.completion_date|date:"Y-n-j" }}</td>
+                <td>{{ r.level }}</td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="9" class="text-muted">暂无生产计划</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header bg-warning">采购计划（按日程下达日期排序）</div>
+    <table class="table table-striped mb-0">
+        <thead>
+            <tr><th>调配方式</th><th>物料代码</th><th>物料名称</th><th>父物料</th><th>需求数量</th><th>日程下达日期</th><th>日程完成日期</th><th>来源 MPS</th><th>层次</th></tr>
+        </thead>
+        <tbody>
+        {% for r in purchase %}
+            <tr>
+                <td><span class="badge bg-warning text-dark">{{ r.allocation_method }}</span></td>
+                <td>{{ r.material.code }}</td><td>{{ r.material.name }}</td>
+                <td>{% if r.parent %}{{ r.parent.name }}{% else %}-{% endif %}</td>
+                <td>{{ r.demand_quantity }}</td>
+                <td>{{ r.release_date|date:"Y-n-j" }}</td><td>{{ r.completion_date|date:"Y-n-j" }}</td>
+                <td>{{ r.mps_record.product.name }} x{{ r.mps_record.quantity }} @ {{ r.mps_record.completion_date|date:"Y-n-j" }}</td>
+                <td>{{ r.level }}</td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="9" class="text-muted">暂无采购计划</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

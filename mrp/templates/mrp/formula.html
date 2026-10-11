@@ -1,0 +1,82 @@
+{% extends "mrp/base.html" %}
+{% block title %}资产负债公式查询 - ERP / MRP 系统{% endblock %}
+{% block content %}
+<h3 class="mb-3">资产负债表公式查询</h3>
+
+<div class="card mb-4">
+    <div class="card-header">公式查询（支持多个变量名，用逗号或空格分隔）</div>
+    <div class="card-body">
+        <form method="get" class="row g-2 align-items-center">
+            <div class="col-md-6">
+                <input type="text" name="names" value="{{ names }}" class="form-control" placeholder="例如：b1, b3">
+            </div>
+            <div class="col-md-3 form-check ms-2">
+                <input type="checkbox" name="expand" value="1" class="form-check-input" id="expand" {% if expand %}checked{% endif %}>
+                <label class="form-check-label" for="expand">递归展开嵌套变量</label>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary">查询</button>
+            </div>
+        </form>
+    </div>
+    {% if results is not None %}
+    <table class="table table-striped mb-0">
+        <thead><tr><th style="width:15%">变量名</th><th>公式</th></tr></thead>
+        <tbody>
+        {% for r in results %}
+            <tr>
+                <td><strong>{{ r.variable }}</strong></td>
+                {% if r.found %}
+                    <td><code>{{ r.variable }} = {{ r.expression }}</code></td>
+                {% else %}
+                    <td class="text-danger">未找到该变量的公式</td>
+                {% endif %}
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+</div>
+
+<div class="card mb-4">
+    <div class="card-header">新增公式</div>
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            <div class="row g-3">
+                {% for field in form %}
+                <div class="col-md-3">
+                    <label class="form-label">{{ field.label }}</label>
+                    {{ field }}
+                    {% for e in field.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+                </div>
+                {% endfor %}
+            </div>
+            <button type="submit" class="btn btn-primary mt-3">保存</button>
+        </form>
+    </div>
+</div>
+
+<table class="table table-striped table-hover bg-white">
+    <thead class="table-dark">
+        <tr><th>变量名</th><th>公式</th><th>含义</th><th>操作</th></tr>
+    </thead>
+    <tbody>
+    {% for f in formulas %}
+        <tr>
+            <td><strong>{{ f.variable }}</strong></td>
+            <td><code>{{ f.expression }}</code></td>
+            <td>{{ f.description }}</td>
+            <td>
+                <form method="post" class="d-inline" onsubmit="return confirm('确定删除？')">
+                    {% csrf_token %}
+                    <button name="delete" value="{{ f.id }}" class="btn btn-sm btn-outline-danger">删除</button>
+                </form>
+            </td>
+        </tr>
+    {% empty %}
+        <tr><td colspan="4" class="text-muted">暂无公式</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
